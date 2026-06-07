@@ -1065,7 +1065,10 @@
     <!-- API KEY MODAL -->
     <div id="apiKeyModal" class="modal">
         <div class="modal-content">
-            <h2>🔑 API Configuration</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h2 style="margin: 0;">🔑 API Configuration</h2>
+                <button class="close-btn" onclick="toggleApiKeyModal()" title="Close" style="font-size: 20px; padding: 0; width: 28px; height: 28px;">✕</button>
+            </div>
             <p>Enter your Langflow API details to get started</p>
             <input 
                 type="password" 
@@ -1076,8 +1079,9 @@
             />
             <div class="modal-buttons">
                 <button class="modal-btn modal-btn-primary" onclick="startWithApiKey()">Start Using Chat</button>
-                <button class="modal-btn modal-btn-secondary" onclick="toggleApiKeyVisibility()">Show Key</button>
+                <button class="modal-btn modal-btn-secondary" onclick="toggleApiKeyModal()">Cancel</button>
             </div>
+            <button class="modal-btn modal-btn-secondary" onclick="toggleApiKeyVisibility()" style="width: 100%; margin-top: 8px;">👁️ Show Key</button>
             <p style="margin-top: 16px; font-size: 11px; color: #64748b;">
                 Your API key is stored in session only • Not saved locally
             </p>
@@ -1133,43 +1137,117 @@
             let html = '';
             
             try {
-                if (message.includes('Test Case') || message.includes('Scenario') || message.includes('Step')) {
-                    const lines = message.split('\n').filter(line => line.trim());
-                    let currentSection = null;
-                    let sectionContent = [];
+                if (message.includes('Test Case') || message.includes('Scenario') || message.includes('Step') || message.includes('Title')) {
+                    const lines = message.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+                    
+                    // Group content by test case ID
+                    let testCases = [];
+                    let currentTC = null;
                     
                     lines.forEach((line) => {
-                        const trimmed = line.trim();
-                        
-                        if (trimmed.match(/^(Test Case|Scenario|Expected|Given|When|Then|And|Steps?:|Precondition|Postcondition|Data)\s*:?\s*\d*\s*[-.]?/i)) {
-                            if (sectionContent.length > 0 && currentSection) {
-                                html += `<div class="testcase-item-header">${currentSection}</div>`;
-                                html += `<div class="testcase-item-content">${sectionContent.join('')}</div>`;
-                                sectionContent = [];
+                        // Check if this is a test case ID line (TC_XXX_NNN format)
+                        if (line.match(/^TC_[A-Z]+_\d+$/i) || line.match(/^TC\d+$/i)) {
+                            if (currentTC) {
+                                testCases.push(currentTC);
                             }
-                            currentSection = trimmed.replace(/^\d+\.\s*/, '');
-                        } else if (trimmed.match(/^[•·\-\*→]\s+/)) {
-                            const content = trimmed.replace(/^[•·\-\*→]\s+/, '');
-                            sectionContent.push(`<p>• ${content}</p>`);
-                        } else if (currentSection && trimmed.length > 0) {
-                            sectionContent.push(`<p>${trimmed}</p>`);
+                            currentTC = { id: line, sections: {} };
+                        } else if (currentTC) {
+                            // Extract section type
+                            const sectionMatch = line.match(/^(Title|Description|Test Case|Scenario|Expected|Given|When|Then|And|Given - |When - |Then - |Steps?:|Precondition|Postcondition|Data|Result|Outcome|Notes|Comments)\s*:?\s*(.*)/i);
+                            
+                            if (sectionMatch) {
+                                const sectionType = sectionMatch[1].toLowerCase().replace(/[\s:]/g, '');
+                                const sectionValue = sectionMatch[2];
+                                
+                                if (!currentTC.sections[sectionType]) {
+                                    currentTC.sections[sectionType] = [];
+                                }
+                                if (sectionValue) {
+                                    currentTC.sections[sectionType].push(sectionValue);
+                                }
+                            } else if (line.match(/^[•·\-\*→\d+\.]/)) {
+                                // Bullet point or numbered item - append to last section
+                                const lastSection = Object.keys(currentTC.sections).pop();
+                                if (lastSection) {
+                                    currentTC.sections[lastSection].push(line);
+                                } else {
+                                    // If no section exists yet, create a generic one
+                                    if (!currentTC.sections['content']) {
+                                        currentTC.sections['content'] = [];
+                                    }
+                                    currentTC.sections['content'].push(line);
+                                }
+                            } else if (line.length > 0) {
+                                // Append to last section
+                                const lastSection = Object.keys(currentTC.sections).pop();
+                                if (lastSection && currentTC.sections[lastSection].length > 0) {
+                                    currentTC.sections[lastSection].push(line);
+                                } else {
+                                    // If no section exists, create a generic content section
+                                    if (!currentTC.sections['content']) {
+                                        currentTC.sections['content'] = [];
+                                    }
+                                    currentTC.sections['content'].push(line);
+                                }
+                            }
                         }
                     });
                     
-                    if (sectionContent.length > 0 && currentSection) {
-                        html += `<div class="testcase-item-header">${currentSection}</div>`;
-                        html += `<div class="testcase-item-content">${sectionContent.join('')}</div>`;
+                    // Don't forget the last test case
+                    if (currentTC) {
+                        testCases.push(currentTC);
                     }
                     
+                    // Define section display order
+                    const sectionOrder = ['title', 'description', 'steps', 'given', 'when', 'then', 'expected', 'precondition', 'postcondition', 'data', 'result', 'outcome', 'notes', 'comments', 'content'];
+                    
+                    // Render test cases in proper order
+                    testCases.forEach((tc) => {
+                        // Display sections in defined order
+                        sectionOrder.forEach(sectionKey => {
+                            if (tc.sections[sectionKey]) {
+                                // Create nice section titles
+                                let sectionTitle = sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1);
+                                sectionTitle = sectionTitle.replace(/([A-Z])/g, ' $1').trim();
+                                if (sectionKey === 'expected') sectionTitle = 'Expected Result';
+                                if (sectionKey === 'precondition') sectionTitle = 'Precondition';
+                                if (sectionKey === 'postcondition') sectionTitle = 'Postcondition';
+                                
+                                let sectionHtml = `<div class="testcase-item-header">${sectionTitle}:</div><div class="testcase-item-content">`;
+                                tc.sections[sectionKey].forEach(item => {
+                                    const formatted = item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                                    sectionHtml += `<p>${formatted}</p>`;
+                                });
+                                sectionHtml += '</div>';
+                                html += sectionHtml;
+                            }
+                        });
+                        
+                        // Display any remaining sections not in the order list
+                        Object.keys(tc.sections).forEach(sectionKey => {
+                            if (!sectionOrder.includes(sectionKey)) {
+                                let sectionTitle = sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1);
+                                let sectionHtml = `<div class="testcase-item-header">${sectionTitle}:</div><div class="testcase-item-content">`;
+                                tc.sections[sectionKey].forEach(item => {
+                                    const formatted = item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                                    sectionHtml += `<p>${formatted}</p>`;
+                                });
+                                sectionHtml += '</div>';
+                                html += sectionHtml;
+                            }
+                        });
+                        
+                        // Test Case ID at the end
+                        html += `<div class="testcase-item-header" style="margin-top: 12px; color: #10b981;">${tc.id}</div>`;
+                    });
+                    
                     if (html.length === 0) {
+                        // Fallback: plain list format - display everything
                         html = '<div class="beautified-testcase">';
                         lines.forEach(line => {
-                            const trimmed = line.trim();
-                            if (trimmed.length > 0) {
-                                const formatted = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                                         .replace(/^(\d+)\.\s*/, '');
-                                html += `<li>${formatted}</li>`;
-                            }
+                            const formatted = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                                  .replace(/^(\d+)\.\s*/, '');
+                            html += `<li>${formatted}</li>`;
                         });
                         html += '</div>';
                     }
@@ -1177,9 +1255,10 @@
                     return html;
                 }
             } catch (e) {
-                console.log('Could not parse as test case');
+                console.log('Error parsing test cases:', e);
             }
             
+            // Fallback formatting - display everything as-is
             const lines = message.split('\n').filter(line => line.trim());
             if (lines.length > 1 && lines.some(l => l.trim().match(/^[•·\-\*→]|^\d+\./))) {
                 html = '<div class="beautified-testcase">';
@@ -1535,50 +1614,117 @@ Please generate: Positive & negative test cases, Edge cases, Acceptance criteria
             
             try {
                 // Check if message contains structured test case data
-                if (message.includes('Test Case') || message.includes('Scenario') || message.includes('Step')) {
-                    // Split by test cases or scenarios
-                    const lines = message.split('\n').filter(line => line.trim());
+                if (message.includes('Test Case') || message.includes('Scenario') || message.includes('Step') || message.includes('Title')) {
+                    const lines = message.split('\n').map(line => line.trim()).filter(line => line.length > 0);
                     
-                    let currentSection = null;
-                    let sectionContent = [];
+                    // Group content by test case ID
+                    let testCases = [];
+                    let currentTC = null;
                     
-                    lines.forEach((line, index) => {
-                        const trimmed = line.trim();
-                        
-                        // Check if this is a header/title line
-                        if (trimmed.match(/^(Test Case|Scenario|Expected|Given|When|Then|And|Given - |When - |Then - |Steps?:|Precondition|Postcondition|Data)\s*:?\s*\d*\s*[-.]?/i)) {
-                            if (sectionContent.length > 0 && currentSection) {
-                                html += `<div class="testcase-item-header">${currentSection}</div>`;
-                                html += `<div class="testcase-item-content">${sectionContent.join('')}</div>`;
-                                sectionContent = [];
+                    lines.forEach((line) => {
+                        // Check if this is a test case ID line (TC_XXX_NNN format)
+                        if (line.match(/^TC_[A-Z]+_\d+$/i) || line.match(/^TC\d+$/i)) {
+                            if (currentTC) {
+                                testCases.push(currentTC);
                             }
-                            currentSection = trimmed.replace(/^\d+\.\s*/, '');
-                        } else if (trimmed.match(/^[•·\-\*→]\s+/)) {
-                            // Bullet point
-                            const content = trimmed.replace(/^[•·\-\*→]\s+/, '');
-                            sectionContent.push(`<p>• ${content}</p>`);
-                        } else if (currentSection && trimmed.length > 0) {
-                            sectionContent.push(`<p>${trimmed}</p>`);
+                            currentTC = { id: line, sections: {} };
+                        } else if (currentTC) {
+                            // Extract section type
+                            const sectionMatch = line.match(/^(Title|Description|Test Case|Scenario|Expected|Given|When|Then|And|Given - |When - |Then - |Steps?:|Precondition|Postcondition|Data|Result|Outcome|Notes|Comments)\s*:?\s*(.*)/i);
+                            
+                            if (sectionMatch) {
+                                const sectionType = sectionMatch[1].toLowerCase().replace(/[\s:]/g, '');
+                                const sectionValue = sectionMatch[2];
+                                
+                                if (!currentTC.sections[sectionType]) {
+                                    currentTC.sections[sectionType] = [];
+                                }
+                                if (sectionValue) {
+                                    currentTC.sections[sectionType].push(sectionValue);
+                                }
+                            } else if (line.match(/^[•·\-\*→\d+\.]/)) {
+                                // Bullet point or numbered item - append to last section
+                                const lastSection = Object.keys(currentTC.sections).pop();
+                                if (lastSection) {
+                                    currentTC.sections[lastSection].push(line);
+                                } else {
+                                    // If no section exists yet, create a generic one
+                                    if (!currentTC.sections['content']) {
+                                        currentTC.sections['content'] = [];
+                                    }
+                                    currentTC.sections['content'].push(line);
+                                }
+                            } else if (line.length > 0) {
+                                // Append to last section
+                                const lastSection = Object.keys(currentTC.sections).pop();
+                                if (lastSection && currentTC.sections[lastSection].length > 0) {
+                                    currentTC.sections[lastSection].push(line);
+                                } else {
+                                    // If no section exists, create a generic content section
+                                    if (!currentTC.sections['content']) {
+                                        currentTC.sections['content'] = [];
+                                    }
+                                    currentTC.sections['content'].push(line);
+                                }
+                            }
                         }
                     });
                     
-                    // Add the last section
-                    if (sectionContent.length > 0 && currentSection) {
-                        html += `<div class="testcase-item-header">${currentSection}</div>`;
-                        html += `<div class="testcase-item-content">${sectionContent.join('')}</div>`;
+                    // Don't forget the last test case
+                    if (currentTC) {
+                        testCases.push(currentTC);
                     }
                     
+                    // Define section display order
+                    const sectionOrder = ['title', 'description', 'steps', 'given', 'when', 'then', 'expected', 'precondition', 'postcondition', 'data', 'result', 'outcome', 'notes', 'comments', 'content'];
+                    
+                    // Render test cases in proper order
+                    testCases.forEach((tc) => {
+                        // Display sections in defined order
+                        sectionOrder.forEach(sectionKey => {
+                            if (tc.sections[sectionKey]) {
+                                // Create nice section titles
+                                let sectionTitle = sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1);
+                                sectionTitle = sectionTitle.replace(/([A-Z])/g, ' $1').trim();
+                                if (sectionKey === 'expected') sectionTitle = 'Expected Result';
+                                if (sectionKey === 'precondition') sectionTitle = 'Precondition';
+                                if (sectionKey === 'postcondition') sectionTitle = 'Postcondition';
+                                
+                                let sectionHtml = `<div class="testcase-item-header">${sectionTitle}:</div><div class="testcase-item-content">`;
+                                tc.sections[sectionKey].forEach(item => {
+                                    const formatted = item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                                    sectionHtml += `<p>${formatted}</p>`;
+                                });
+                                sectionHtml += '</div>';
+                                html += sectionHtml;
+                            }
+                        });
+                        
+                        // Display any remaining sections not in the order list
+                        Object.keys(tc.sections).forEach(sectionKey => {
+                            if (!sectionOrder.includes(sectionKey)) {
+                                let sectionTitle = sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1);
+                                let sectionHtml = `<div class="testcase-item-header">${sectionTitle}:</div><div class="testcase-item-content">`;
+                                tc.sections[sectionKey].forEach(item => {
+                                    const formatted = item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                                    sectionHtml += `<p>${formatted}</p>`;
+                                });
+                                sectionHtml += '</div>';
+                                html += sectionHtml;
+                            }
+                        });
+                        
+                        // Test Case ID at the end
+                        html += `<div class="testcase-item-header" style="margin-top: 12px; color: #10b981;">${tc.id}</div>`;
+                    });
+                    
                     if (html.length === 0) {
-                        // Fallback: format as beautified bullet list
+                        // Fallback: plain list format - display everything
                         html = '<div class="beautified-testcase">';
                         lines.forEach(line => {
-                            const trimmed = line.trim();
-                            if (trimmed.length > 0) {
-                                // Make bold any text between ** markers
-                                const formatted = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                                         .replace(/^(\d+)\.\s*/, '');
-                                html += `<li>${formatted}</li>`;
-                            }
+                            const formatted = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                                  .replace(/^(\d+)\.\s*/, '');
+                            html += `<li>${formatted}</li>`;
                         });
                         html += '</div>';
                     }
@@ -1586,7 +1732,7 @@ Please generate: Positive & negative test cases, Edge cases, Acceptance criteria
                     return html;
                 }
             } catch (e) {
-                console.log('Could not parse as test case, using plain text');
+                console.log('Error parsing test cases:', e);
             }
             
             // Fallback: format plain text as beautified list
