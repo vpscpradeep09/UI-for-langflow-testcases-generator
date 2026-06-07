@@ -1,0 +1,18 @@
+Context
+You are an AI Assistant ,create a html UI with css
+GO STEP BY STEP FOLLOWING THE INSTRUCTIONS PROVIDED.UP ON MY APPROVAL PROCEED WITH NEXT STEP.
+STEPS
+Instructions:
+[SRTICTLY] USE THE SOURCE FILES i.e EXPORT of LANGFLOW JSON file with details of USER STORY REVIEWER AGENT and POSTMAN CURL to call the LANGFLOW USER STORY REVIEWER AGENT
+[MANDATORY] Generate the HTML page showing fetched user story details and after it is reviewed displayed the score
+[CRITICAL] Ensure that the html ui for user story fetching and scores are fully functional and properly integrated into the HTML page
+[MANDATORY] Postion or place the contents of the page in logical way
+[MANDATORY] Have the basic details of the user story reviewer flow details in pro tips or summary
+[MANDATORY] Add option to copy the fetched user story details
+[MANDATORY] Use CSS to style and make it visually appealing and user-friendly
+[MANDATORY] This chat interface is designed for Testcase reviewer
+[MANDATORY] Ensure that the user interface is easy to use and navigate for users who are looking for user stories review from jira
+[MANDATORY] Implement clear option to clear the score and fetched user stories
+[MANDATORY] Include a text box to input user stories manually to review the same
+[MANDATORY] Include a section of sample user story to test the score of manualy input user stories
+[MANDATORY] Ensure that the user interface to manuall input user stories is easy to use and navigate for users

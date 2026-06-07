@@ -1,0 +1,9 @@
+postman request POST 'http://localhost:7860/api/v1/run/3fca058a-15dd-43a1-8d4c-b5f576246de7' \
+  --header 'Content-Type: application/json' \
+  --header 'x-api-key: sk-l7XYkwdxkUmrTea_PvIcA0OwkCfb6AR3tEJ4WtiiIls' \
+  --body '{
+		           "output_type": "text",
+		           "input_type": "text",
+		           "input_value": "hello world!"
+		           
+		         }'

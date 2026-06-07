@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Story Reviewer - Langflow Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1em;
+            opacity: 0.95;
+        }
+
+        .chat-container {
+            padding: 20px;
+        }
+
+        .info-box {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+            font-size: 0.95em;
+            color: #333;
+        }
+
+        .info-box strong {
+            color: #667eea;
+        }
+
+        .footer {
+            background: #f9f9f9;
+            padding: 15px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+            border-top: 1px solid #ddd;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .chat-container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🚀 User Story Reviewer</h1>
+            <p>AI-Powered Assessment for Test Case Generation</p>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="chat-container">
+            <div class="info-box">
+                <strong>💡 How to Use:</strong>
+                <ul style="margin-top: 10px; margin-left: 20px;">
+                    <li>Enter your user story in the chat</li>
+                    <li>The AI will analyze and generate a quality score</li>
+                    <li>Get detailed assessment and recommendations</li>
+                </ul>
+            </div>
+
+            <!-- Langflow Embedded Chat -->
+            <langflow-chat
+                window_title="User Story Review Agent"
+                flow_id="3fca058a-15dd-43a1-8d4c-b5f576246de7"
+                host_url="http://localhost:7860">
+            </langflow-chat>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Powered by Langflow AI | User Story Review Agent v1.0</p>
+        </div>
+    </div>
+
+    <!-- Langflow Embedded Chat Script -->
+    <script src="https://cdn.jsdelivr.net/gh/logspace-ai/langflow-embedded-chat@v1.0.7/dist/build/static/js/bundle.min.js"></script>
+</body>
+</html>

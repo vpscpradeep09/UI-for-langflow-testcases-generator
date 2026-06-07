@@ -1,1 +1,1 @@
-# UI-for-langflow-testcases-generator
+# UI-for-langflow-projects

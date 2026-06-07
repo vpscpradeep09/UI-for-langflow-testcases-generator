@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Story Reviewer - AI-Powered Assessment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0F1419 0%, #1A2332 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #D0D0D0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #131820;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            border: 1px solid #2A3F5F;
+        }
+
+        /* Header Section */
+        .header {
+            background: linear-gradient(135deg, #1E3A52 0%, #0F2940 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            border-bottom: 2px solid #2A5F8D;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        /* Main Content */
+        .content {
+            padding: 40px;
+        }
+
+        /* Pro Tips Section */
+        .pro-tips {
+            background: linear-gradient(135deg, #1E3A52 0%, #254460 100%);
+            color: #D0D0D0;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border-left: 5px solid #60A5FA;
+        }
+
+        .pro-tips h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+        }
+
+        .pro-tips h3::before {
+            content: "💡";
+            margin-right: 10px;
+            font-size: 1.5em;
+        }
+
+        .pro-tips ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .pro-tips li {
+            margin: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .pro-tips li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        /* Mode Selection */
+        .mode-btn {
+            background: #1E2A38;
+            border: 2px solid #2A3F5F;
+            color: #D0D0D0;
+            padding: 15px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            text-align: left;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .mode-btn:hover {
+            border-color: #60A5FA;
+            background: #254460;
+            color: #E0E0E0;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #2D5A8C 0%, #1E3A52 100%);
+            color: white;
+            border-color: #60A5FA;
+            box-shadow: 0 5px 15px rgba(96, 165, 250, 0.3);
+        }
+
+        .mode-section {
+            display: none;
+        }
+
+        .mode-section.active {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        /* Section Wrapper */
+        .section {
+            margin-bottom: 35px;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: #60A5FA;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .section-title::before {
+            content: "";
+            width: 5px;
+            height: 25px;
+            background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+            margin-right: 15px;
+            border-radius: 3px;
+        }
+
+        /* Sample User Story */
+        .sample-story {
+            background: #1E2A38;
+            border: 2px dashed #2A3F5F;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .sample-story-label {
+            font-size: 0.9em;
+            color: #A0B0C0;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sample-story-content {
+            background: #131820;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #60A5FA;
+            font-style: italic;
+            color: #D0D0D0;
+            line-height: 1.6;
+        }
+
+        .sample-use-btn {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 12px;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .sample-use-btn:hover {
+            background: #2563EB;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Input Section */
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #E0E0E0;
+            font-size: 0.95em;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            border: 2px solid #2A3F5F;
+            border-radius: 10px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 1em;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+            background: #1E2A38;
+            color: #D0D0D0;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #60A5FA;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+            background: #1E2A38;
+            color: #E0E0E0;
+        }
+
+        /* Button Group */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+            color: white;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #3F4D63;
+            color: #D0D0D0;
+            border: 2px solid #2A3F5F;
+        }
+
+        .btn-secondary:hover {
+            background: #4A5A75;
+            border-color: #60A5FA;
+            color: #E0E0E0;
+        }
+
+        .btn-danger {
+            background: #EF4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #DC2626;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Loading State */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Results Section */
+        .results {
+            background: linear-gradient(135deg, #1E2A38 0%, #131820 100%);
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid #2A3F5F;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-item {
+            background: #1E2A38;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 5px solid #60A5FA;
+            position: relative;
+            color: #D0D0D0;
+        }
+
+        .result-item.user-story {
+            border-left-color: #3B82F6;
+        }
+
+        .result-item.score {
+            border-left-color: #F59E0B;
+        }
+
+        /* Assessment Card Beautification */
+        .assessment-card {
+            background: linear-gradient(135deg, #1E2A38 0%, #131820 100%);
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 5px solid #F59E0B;
+            margin: 20px 0;
+            color: #D0D0D0;
+        }
+
+        .assessment-section {
+            margin-bottom: 20px;
+        }
+
+        .assessment-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .assessment-title {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.1em;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .assessment-title::before {
+            content: "→";
+            margin-right: 10px;
+            font-size: 1.3em;
+            color: #f59e0b;
+        }
+
+        .assessment-content {
+            color: #D0D0D0;
+            line-height: 1.8;
+            font-size: 0.95em;
+            padding-left: 20px;
+            border-left: 3px solid #2A3F5F;
+        }
+
+        .assessment-highlight {
+            background: #fff9e6;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border-left: 4px solid #f59e0b;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .assessment-list {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+
+        .assessment-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #D0D0D0;
+        }
+
+        .assessment-list li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        /* Code block styling for assessment */
+        .assessment-card code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* Summary section styling */
+        /* Assessment Table Styles */
+        .assessment-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .assessment-table thead {
+            background: linear-gradient(135deg, #2D5A8C 0%, #1E3A52 100%);
+            color: white;
+        }
+
+        .assessment-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.95em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .assessment-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .assessment-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .assessment-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .assessment-field-name {
+            font-weight: 600;
+            color: #667eea;
+            white-space: nowrap;
+            width: 30%;
+        }
+
+        .assessment-field-value {
+            color: #333;
+            word-break: break-word;
+        }
+
+        .assessment-list-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .assessment-list-item::before {
+            content: "✓";
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .assessment-section-header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 12px 15px;
+            font-weight: 600;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            grid-column: 1 / -1;
+        }
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .result-value {
+            color: #333;
+            line-height: 1.6;
+            word-break: break-word;
+            white-space: normal;
+        }
+
+        /* Score Card */
+        .score-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .score-value {
+            font-size: 3.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .score-label {
+            font-size: 1.2em;
+            opacity: 0.95;
+            margin-bottom: 15px;
+        }
+
+        .score-details {
+            font-size: 0.95em;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+
+        /* Copy Button */
+        .copy-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #5568d3;
+        }
+
+        .copy-btn.copied {
+            background: #10b981;
+        }
+
+        .copy-btn.copied::after {
+            content: " ✓ Copied!";
+        }
+
+        /* Alert Messages */
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert-error {
+            background: #fee;
+            color: #c33;
+            border-left: 4px solid #f5576c;
+        }
+
+        .alert-success {
+            background: #efe;
+            color: #393;
+            border-left: 4px solid #10b981;
+        }
+
+        .alert-info {
+            background: #eef;
+            color: #339;
+            border-left: 4px solid #667eea;
+        }
+
+        /* Debug Console */
+        .debug-panel {
+            background: #1e1e1e;
+            color: #0ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .debug-panel.show {
+            display: block;
+        }
+
+        .debug-log {
+            margin: 5px 0;
+            padding: 5px;
+            border-bottom: 1px solid #333;
+        }
+
+        .debug-log.success {
+            color: #0f0;
+        }
+
+        .debug-log.error {
+            color: #f00;
+        }
+
+        .debug-log.info {
+            color: #0ff;
+        }
+
+        .debug-toggle {
+            background: #333;
+            color: #0ff;
+            border: 1px solid #0ff;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            margin-top: 10px;
+        }
+
+        .debug-toggle:hover {
+            background: #444;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn-primary {
+                flex: none;
+                width: 100%;
+            }
+
+            .score-value {
+                font-size: 2.5em;
+            }
+
+            textarea {
+                height: 120px;
+            }
+
+            input[type="text"] {
+                font-size: 16px; /* Prevent zoom on mobile */
+            }
+
+            .mode-btn {
+                flex-direction: column;
+                min-width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🚀 User Story Reviewer</h1>
+            <p>AI-Powered Assessment for Test Case Generation</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Alert Messages -->
+            <div id="alert" class="alert"></div>
+
+            <!-- Mode Selection -->
+            <div class="section">
+                <div class="section-title">⚙️ Operating Mode</div>
+                <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <button class="mode-btn active" data-mode="direct" onclick="switchMode('direct')">
+                        ✏️ Manual Input Mode
+                        <div style="font-size: 0.8em; opacity: 0.8; margin-top: 5px;">Skip Jira, input story directly</div>
+                    </button>
+                    <button class="mode-btn" data-mode="jira" onclick="switchMode('jira')">
+                        🔗 Jira Integration Mode
+                        <div style="font-size: 0.8em; opacity: 0.8; margin-top: 5px;">Fetch & process from Jira</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pro Tips Section -->
+            <div class="pro-tips">
+                <h3>How It Works</h3>
+                <ul id="tipsContent">
+                    <li>✏️ Enter user story content manually</li>
+                    <li>Click "Get Score" to analyze with Groq AI</li>
+                    <li>Receive quality score and detailed assessment</li>
+                    <li>Copy results for further use or documentation</li>
+                    <li>Use the Clear button to reset and start fresh</li>
+                </ul>
+            </div>
+
+            <!-- JIRA MODE SECTION -->
+            <div id="jiraMode" class="mode-section">
+                <div class="section">
+                    <div class="section-title">Quick Score</div>
+
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="fetchFromJiraAndScore()">
+                            <span id="jiraBtnText">Get Score</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DIRECT MODE SECTION -->
+            <div id="directMode" class="mode-section active">
+            <div class="section">
+                <div class="section-title">Sample User Story</div>
+                <div class="sample-story">
+                    <div class="sample-story-label">📌 Example User Story</div>
+                    <div class="sample-story-content">
+                        As a user, I want to be able to log in with my email and password so that I can access my account securely. The login form should validate empty fields and show error messages for invalid credentials. After successful login, I should be redirected to the dashboard.
+                    </div>
+                    <button class="sample-use-btn" onclick="useSampleStory()">Use This Sample</button>
+                </div>
+            </div>
+
+            <!-- Section 2: Manual Input -->
+            <div class="section">
+                <div class="section-title">Review User Story</div>
+                <div class="input-group">
+                    <label class="input-label">📝 Enter or Paste Your User Story</label>
+                    <textarea id="userStoryInput" placeholder="Paste your user story here... or click 'Use This Sample' to test with an example."></textarea>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="reviewUserStory()">
+                        <span id="btnText">Get Score</span>
+                    </button>
+                    <button class="btn btn-danger" onclick="clearResults()">Clear All</button>
+                </div>
+            </div>
+            </div> <!-- End of directMode -->
+
+            <!-- Section 3: Results -->
+            <div class="section">
+                <div class="section-title">Review Results</div>
+                <div id="results" class="results">
+                    <div class="result-item user-story">
+                        <button class="copy-btn" onclick="copyToClipboard('userStoryDisplay')">Copy</button>
+                        <div class="result-label">📖 Reviewed User Story</div>
+                        <div id="userStoryDisplay" class="result-value"></div>
+                    </div>
+
+                    <div class="score-card">
+                        <div class="score-label">Quality Assessment Score</div>
+                        <div class="score-value" id="scoreValue">0</div>
+                        <div class="score-details" id="scoreDetails"></div>
+                    </div>
+
+                    <div style="position: relative;">
+                        <button class="copy-btn" onclick="copyToClipboard('scoreDisplay')" style="top: 20px;">Copy</button>
+                        <div class="result-label" style="margin-top: 10px; margin-bottom: 15px;">📊 Detailed Assessment</div>
+                        <div id="scoreDisplay" class="result-value"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Debug Console -->
+            <div class="section">
+                <button class="debug-toggle" onclick="toggleDebugPanel()">🔧 Debug Console</button>
+                <div id="debugPanel" class="debug-panel">
+                    <div id="debugLog"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Powered by Langflow AI | User Story Review Agent v1.0</p>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const LANGFLOW_API = 'http://localhost:7860/api/v1/run/3fca058a-15dd-43a1-8d4c-b5f576246de7';
+        const API_KEY = 'sk-l7XYkwdxkUmrTea_PvIcA0OwkCfb6AR3tEJ4WtiiIls';
+
+        // Sample user story
+        const SAMPLE_STORY = `As a user, I want to be able to log in with my email and password so that I can access my account securely. The login form should validate empty fields and show error messages for invalid credentials. After successful login, I should be redirected to the dashboard.`;
+
+        // Show Alert
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.getElementById('alert');
+            alertDiv.textContent = message;
+            alertDiv.className = `alert show alert-${type}`;
+            setTimeout(() => {
+                alertDiv.classList.remove('show');
+            }, 5000);
+        }
+
+        // Use Sample Story
+        function useSampleStory() {
+            document.getElementById('userStoryInput').value = SAMPLE_STORY;
+            document.getElementById('userStoryInput').focus();
+            showAlert('Sample user story loaded. Click "Review & Score" to analyze it.', 'info');
+        }
+
+        // Copy to Clipboard
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            // Get text content, handling both text and HTML
+            let text = element.textContent || element.innerText;
+            if (!text && element.innerHTML) {
+                // If HTML content, extract text from assessment card
+                text = element.innerText || element.textContent;
+            }
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                showAlert('Failed to copy to clipboard', 'error');
+            });
+        }
+
+        // Clear Results
+        function clearResults() {
+            // Clear mode-specific data
+            const activeMode = document.querySelector('.mode-btn.active');
+            const currentMode = activeMode ? activeMode.dataset.mode : 'direct';
+
+            if (currentMode === 'direct') {
+                document.getElementById('userStoryInput').value = '';
+            }
+            // Jira mode has no inputs to clear anymore
+
+            // Clear results section
+            document.getElementById('results').classList.remove('show');
+            document.getElementById('alert').classList.remove('show');
+            showAlert('✅ All data cleared. Ready for new input.', 'info');
+        }
+
+        // Review User Story (Manual Input Mode - Call Langflow Flow)
+        async function reviewUserStory() {
+            const userStory = document.getElementById('userStoryInput').value.trim();
+
+            if (!userStory) {
+                showAlert('Please enter a user story to review', 'error');
+                return;
+            }
+
+            const btn = event.target.closest('.btn-primary');
+            const btnText = btn.querySelector('#btnText');
+            const originalText = btnText.textContent;
+
+            try {
+                // Show loading state
+                btn.disabled = true;
+                btnText.innerHTML = '<span class="loading"></span>Scoring...';
+                
+                addDebugLog('Manual Input Mode: Calling Langflow Flow...', 'info');
+                addDebugLog(`Input: ${userStory.substring(0, 100)}...`, 'info');
+
+                // Call Langflow - send user story text directly
+                const payload = {
+                    output_type: 'text',
+                    input_type: 'text',
+                    input_value: userStory
+                };
+
+                addDebugLog('Sending to Langflow API...', 'info');
+
+                const response = await fetch(LANGFLOW_API, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': API_KEY
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                addDebugLog('Response received from Langflow', 'success');
+
+                // Parse response and extract result
+                let result = extractResultFromResponse(data);
+                
+                if (!result) {
+                    throw new Error('Could not extract result from Langflow response');
+                }
+
+                // Extract score from result
+                let score = extractScoreFromText(result);
+                addDebugLog(`Extracted Score: ${score}`, 'success');
+
+                // Display results
+                displayResults(userStory, result, score);
+                showAlert('✅ User story scored successfully!', 'success');
+
+            } catch (error) {
+                addDebugLog(`Error: ${error.message}`, 'error');
+                console.error('Error:', error);
+                
+                let errorMsg = error.message;
+                if (error.message.includes('Failed to fetch')) {
+                    errorMsg = 'Cannot connect to Langflow. Verify it is running on http://localhost:7860';
+                }
+                
+                showAlert(`❌ Error: ${errorMsg}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = originalText;
+            }
+        }
+
+        // Extract Text Attribute from Response Data
+        function extractTextAttribute(data) {
+            addDebugLog('Attempting to extract text attribute from data...', 'info');
+            let textContent = null;
+            
+            // First, check if data itself is a string (already extracted)
+            if (typeof data === 'string') {
+                textContent = data;
+                addDebugLog('✓ Data is already a string', 'success');
+            }
+            // Pattern 1: data.outputs[0].outputs[0].results.message.text
+            else if (data.outputs?.[0]?.outputs?.[0]?.results?.message?.text) {
+                textContent = data.outputs[0].outputs[0].results.message.text;
+                addDebugLog('✓ Text extracted from outputs[0].outputs[0].results.message.text', 'success');
+            }
+            // Pattern 2: data.outputs[0].outputs[0].message.text
+            else if (data.outputs?.[0]?.outputs?.[0]?.message?.text) {
+                textContent = data.outputs[0].outputs[0].message.text;
+                addDebugLog('✓ Text extracted from outputs[0].outputs[0].message.text', 'success');
+            }
+            // Pattern 3: data.outputs[0].results.text.data.text (nested data structure)
+            else if (data.outputs?.[0]?.results?.text?.data?.text) {
+                textContent = data.outputs[0].results.text.data.text;
+                addDebugLog('✓ Text extracted from outputs[0].results.text.data.text', 'success');
+            }
+            // Pattern 4: data.outputs[0].results.text (direct text object)
+            else if (data.outputs?.[0]?.results?.text) {
+                const textObj = data.outputs[0].results.text;
+                if (typeof textObj === 'string') {
+                    textContent = textObj;
+                    addDebugLog('✓ Text extracted from outputs[0].results.text (string)', 'success');
+                } else if (textObj.data?.text) {
+                    textContent = textObj.data.text;
+                    addDebugLog('✓ Text extracted from outputs[0].results.text.data.text', 'success');
+                } else {
+                    textContent = JSON.stringify(textObj);
+                    addDebugLog('✓ Text extracted from outputs[0].results.text (stringified)', 'success');
+                }
+            }
+            // Pattern 5: Direct outputs structure - looking for text attribute
+            else if (data.outputs?.[0]) {
+                // Search recursively for a 'text' property
+                const found = searchForTextProperty(data.outputs[0]);
+                if (found) {
+                    textContent = found;
+                    addDebugLog('✓ Text found via recursive search in outputs[0]', 'success');
+                }
+            }
+            // Pattern 6: data.message.text
+            else if (data.message?.text) {
+                textContent = data.message.text;
+                addDebugLog('✓ Text extracted from message.text', 'success');
+            }
+            
+            if (!textContent) {
+                addDebugLog('⚠ No text attribute found. Full response will be displayed.', 'warn');
+                return JSON.stringify(data, null, 2);
+            }
+            
+            // Convert escaped newlines to actual newlines
+            if (typeof textContent === 'string') {
+                textContent = textContent.replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\"/g, '"');
+                addDebugLog(`✓ Converted escape sequences. Text length: ${textContent.length} chars`, 'success');
+            }
+            
+            return textContent;
+        }
+        
+        // Helper function to recursively search for text property
+        function searchForTextProperty(obj) {
+            if (typeof obj !== 'object' || obj === null) return null;
+            
+            // If this object has a text property, return it
+            if (obj.text && typeof obj.text === 'string') {
+                return obj.text;
+            }
+            
+            // Search in all properties
+            for (let key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    const result = searchForTextProperty(obj[key]);
+                    if (result) return result;
+                }
+            }
+            
+            return null;
+        }
+
+        // Extract Result from Langflow Response
+        function extractResultFromResponse(data) {
+            addDebugLog(`Response structure: ${JSON.stringify(data).substring(0, 150)}...`, 'info');
+            return extractTextAttribute(data);
+        }
+        function extractScoreFromText(text) {
+            // Try various patterns to extract a score
+            const patterns = [
+                // Overall Score: 84/100 or similar
+                /overall\s*score[\s:]*(\d+(?:\.\d+)?)\s*\/\s*100/i,
+                // Score: X/100 format
+                /score[\s:]*(\d+(?:\.\d+)?)\s*\/\s*100/i,
+                // X/100 format directly
+                /(\d+(?:\.\d+)?)\s*\/\s*100/,
+                // Score: X/10 or Score: X out of 10
+                /score[\s:]*(\d+(?:\.\d+)?)\s*(?:out of|\/|%)?[\s]*(?:10)?/i,
+                // Rating: X
+                /rating[\s:]*(\d+(?:\.\d+)?)/i,
+                // X out of 10
+                /(\d+(?:\.\d+)?)\s*(?:out of|\/)\s*10/i,
+                // X/10
+                /(\d+(?:\.\d+)?)\/10/i,
+                // X%
+                /(\d+(?:\.\d+)?)%/,
+                // Quality Score: X
+                /quality\s*score[\s:]*(\d+(?:\.\d+)?)/i,
+                // Overall Score: X
+                /overall\s*score[\s:]*(\d+(?:\.\d+)?)/i,
+                // Test Score: X
+                /test\s*score[\s:]*(\d+(?:\.\d+)?)/i,
+                // Assessment: X
+                /assessment[\s:]*(\d+(?:\.\d+)?)/i,
+                // Just a number with context like "Score is 8.5"
+                /(?:score|rating|quality)[\s]*(?:is|:)[\s]*(\d+(?:\.\d+)?)/i
+            ];
+
+            for (let pattern of patterns) {
+                const match = text.match(pattern);
+                if (match && match[1]) {
+                    let score = parseFloat(match[1]);
+                    // Normalize score to 0-100 scale
+                    if (score <= 10) {
+                        score = (score / 10) * 100;
+                    }
+                    // If already in 0-100 range, keep it
+                    return Math.min(Math.max(score, 0), 100);
+                }
+            }
+            
+            // If no score found, return 0
+            return 0;
+        }
+
+        // Display Results
+        function displayResults(userStory, assessment, score) {
+            document.getElementById('userStoryDisplay').textContent = userStory;
+            document.getElementById('scoreValue').textContent = (score || 0).toFixed(1);
+            
+            // Extract and beautify the text attribute from assessment
+            const extractedText = String(assessment).trim();
+            addDebugLog(`Text length: ${extractedText.length} characters`, 'info');
+            const beautifiedAssessment = beautifyAssessment(extractedText);
+            document.getElementById('scoreDisplay').innerHTML = beautifiedAssessment;
+            
+            // Show score details based on score value
+            const scoreDetailsElement = document.getElementById('scoreDetails');
+            if (score >= 80) {
+                scoreDetailsElement.textContent = '✓ Excellent Quality - Ready for Testing';
+            } else if (score >= 60) {
+                scoreDetailsElement.textContent = '◐ Good Quality - Minor Improvements Recommended';
+            } else if (score >= 40) {
+                scoreDetailsElement.textContent = '◔ Fair Quality - Significant Improvements Needed';
+            } else {
+                scoreDetailsElement.textContent = '✗ Needs Major Revision';
+            }
+
+            document.getElementById('results').classList.add('show');
+        }
+
+        // Beautify Assessment Function - Enhanced Markdown Parser
+        function beautifyAssessment(text) {
+            // Ensure we're working with a string
+            if (typeof text === 'object') {
+                text = JSON.stringify(text, null, 2);
+            }
+
+            text = String(text).trim();
+            addDebugLog('Beautifying extracted text for detailed analysis...', 'info');
+            
+            let html = '<div class="assessment-card" style="background: linear-gradient(135deg, #0f1419 0%, #1a2332 100%); padding: 30px; border-radius: 12px; color: #e0e0e0; font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; font-size: 15px;">';
+            const lines = text.split('\n');
+            let i = 0;
+
+            while (i < lines.length) {
+                const line = lines[i];
+                const trimmed = line.trim();
+
+                // Skip empty lines
+                if (!trimmed) {
+                    i++;
+                    continue;
+                }
+
+                // Skip unwanted sections (Input, HTML Output) and their code blocks
+                if (trimmed === '**Input:**' || trimmed === '**HTML Output:**' || trimmed.includes('**Input:**') || trimmed.includes('**HTML Output:**')) {
+                    addDebugLog(`⊘ Skipping unwanted section: ${trimmed}`, 'warn');
+                    i++;
+                    // Skip until we find another major section header that's not Input/HTML Output
+                    while (i < lines.length) {
+                        const nextLine = lines[i];
+                        const nextTrimmed = nextLine.trim();
+                        
+                        // Skip empty lines
+                        if (!nextTrimmed) {
+                            i++;
+                            continue;
+                        }
+                        
+                        // Stop skipping when we hit a "Review" or "Parameter" section header
+                        if (nextTrimmed.match(/^\*\*[A-Z][^*]{3,}\*\*:\s*$/) && 
+                            !nextTrimmed.includes('Input') && !nextTrimmed.includes('HTML Output') &&
+                            !nextTrimmed.includes('Output:')) {
+                            break;
+                        }
+                        
+                        // Also skip table rows that might appear after HTML Output
+                        if (nextTrimmed.startsWith('|')) {
+                            while (i < lines.length && lines[i].trim().startsWith('|')) {
+                                i++;
+                            }
+                            continue;
+                        }
+                        
+                        i++;
+                    }
+                    continue;
+                }
+
+                // Skip code blocks entirely (markdown code with triple backticks)
+                if (trimmed.startsWith('```')) {
+                    addDebugLog(`⊘ Skipping code block`, 'info');
+                    i++; // Skip opening ```
+                    // Skip until closing ```
+                    while (i < lines.length && !lines[i].trim().startsWith('```')) {
+                        i++;
+                    }
+                    if (i < lines.length) {
+                        i++; // Skip closing ```
+                    }
+                    continue;
+                }
+
+                // Detect markdown tables - look ahead for table pattern
+                if (trimmed.startsWith('|')) {
+                    let tableRows = [];
+                    let tableStart = i;
+                    
+                    // Collect all consecutive table rows
+                    while (i < lines.length && lines[i].trim().startsWith('|')) {
+                        tableRows.push(lines[i].trim());
+                        i++;
+                    }
+                    
+                    // Verify we have at least header + separator + data rows
+                    if (tableRows.length >= 2) {
+                        addDebugLog(`✓ Detected table with ${tableRows.length} rows`, 'success');
+                        html += `<div class="assessment-section" style="margin: 24px 0; overflow-x: auto; border-radius: 8px;">
+                            <table style="width: 100%; border-collapse: collapse; background: #0f1419; border: 1px solid #2a3f5f; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">`;
+                        
+                        let isHeader = true;
+                        tableRows.forEach((row, idx) => {
+                            const cells = row.split('|').map(cell => cell.trim()).filter(cell => cell);
+                            
+                            // Skip separator rows (all dashes)
+                            if (cells.every(cell => cell.match(/^-+$|^:-+:|^:-+$|^-+:$/))) {
+                                return;
+                            }
+                            
+                            if (isHeader) {
+                                // Header row
+                                html += '<thead style="background: linear-gradient(135deg, #2d5a8c 0%, #1e3a52 100%);"><tr>';
+                                cells.forEach((cell, cellIdx) => {
+                                    html += `<th style="padding: 16px 18px; text-align: left; font-weight: 700; color: #ffffff; font-size: 0.95em; border-right: 1px solid #3d6a9c; ${cellIdx === cells.length - 1 ? 'border-right: none;' : ''} font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; letter-spacing: 0.3px;">${escapeHtml(cell)}</th>`;
+                                });
+                                html += '</tr></thead>';
+                                isHeader = false;
+                            } else {
+                                // Data row
+                                html += '<tbody><tr style="border-bottom: 1px solid #2a3f5f; background: #131820; transition: background 0.2s ease;">';
+                                cells.forEach((cell, cellIdx) => {
+                                    html += `<td style="padding: 14px 18px; text-align: left; color: #d0d0d0; font-size: 0.95em; border-right: 1px solid #2a3f5f; ${cellIdx === cells.length - 1 ? 'border-right: none;' : ''} font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">${escapeHtml(cell)}</td>`;
+                                });
+                                html += '</tr></tbody>';
+                            }
+                        });
+                        
+                        html += '</table></div>';
+                    } else {
+                        // Not a valid table, treat as regular text
+                        addDebugLog(`⚠ Line starts with | but has < 2 rows, treating as text`, 'warn');
+                        i = tableStart;
+                    }
+                    continue;
+                }
+
+                // Handle "Overall Score" specially - make it prominent
+                if (trimmed.match(/^Overall\s+Score[\s:]*.*\/.*100?/i)) {
+                    html += `<div class="assessment-section" style="margin: 30px 0; padding: 18px 20px; background: linear-gradient(135deg, #1e2a3a 0%, #25364a 100%); border-left: 5px solid #f59e0b; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                        <div style="font-size: 1.25em; font-weight: 700; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; letter-spacing: 0.5px;">
+                            ${escapeHtml(trimmed)}
+                        </div>
+                    </div>`;
+                    i++;
+                    continue;
+                }
+
+                // Handle section headers (bold text ending with colon, or lines with **)
+                if ((trimmed.includes('**') && trimmed.endsWith(':')) || 
+                    (trimmed.endsWith(':') && trimmed.length < 60 && !trimmed.includes('|'))) {
+                    
+                    // Remove markdown bold markers and colon
+                    let headerText = trimmed.replace(/\*\*/g, '').slice(0, -1);
+                    
+                    // Create title section with improved styling
+                    html += `<div class="assessment-section" style="margin-top: 28px; margin-bottom: 18px;">
+                        <div class="assessment-title" style="font-size: 1.2em; font-weight: 700; color: #ffffff; margin-bottom: 15px; display: flex; align-items: center; padding: 12px 0 12px 0; border-bottom: 3px solid #f59e0b; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; letter-spacing: 0.3px;">
+                            ${escapeHtml(headerText)}
+                        </div>`;
+
+                    // Collect content until next header or end
+                    let content = [];
+                    i++;
+                    while (i < lines.length) {
+                        const nextLine = lines[i];
+                        const nextTrimmed = nextLine.trim();
+                        
+                        if (!nextTrimmed) {
+                            i++;
+                            continue;
+                        }
+                        
+                        if ((nextTrimmed.includes('**') && nextTrimmed.endsWith(':')) || 
+                            (nextTrimmed.endsWith(':') && nextTrimmed.length < 60 && !nextTrimmed.includes('|'))) {
+                            break;
+                        }
+                        
+                        content.push(nextLine);
+                        i++;
+                    }
+
+                    // Format collected content
+                    if (content.length > 0) {
+                        const contentHtml = formatContentBlock(content);
+                        html += contentHtml;
+                    }
+                    
+                    html += '</div>';
+                    continue;
+                }
+
+                // Handle numbered lists (1., 2., etc.)
+                if (trimmed.match(/^\d+\.\s/)) {
+                    html += '<div class="assessment-section"><ol style="list-style: decimal; padding-left: 25px; color: #d0d0d0; font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif; margin: 12px 0;">';
+                    
+                    while (i < lines.length) {
+                        const line = lines[i];
+                        const lineTrimmed = line.trim();
+                        
+                        if (!lineTrimmed || !lineTrimmed.match(/^\d+\.\s/)) {
+                            break;
+                        }
+                        
+                        const itemText = lineTrimmed.replace(/^\d+\.\s+/, '').trim();
+                        // Format bold text in list items
+                        const formattedText = formatMarkdownText(itemText);
+                        html += `<li style="margin: 10px 0; line-height: 1.7; color: #d0d0d0;">${formattedText}</li>`;
+                        i++;
+                    }
+                    
+                    html += '</ol></div>';
+                    continue;
+                }
+
+                // Handle bullet lists (-, •, *)
+                if (trimmed.match(/^[-•*]\s/)) {
+                    html += '<div class="assessment-section"><ul class="assessment-list" style="list-style: none; padding: 0; margin: 12px 0; font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif;">';
+                    
+                    while (i < lines.length) {
+                        const line = lines[i];
+                        const lineTrimmed = line.trim();
+                        
+                        if (!lineTrimmed || !lineTrimmed.match(/^[-•*]\s/)) {
+                            break;
+                        }
+                        
+                        const itemText = lineTrimmed.replace(/^[-•*]\s+/, '').trim();
+                        // Format bold text in list items
+                        const formattedText = formatMarkdownText(itemText);
+                        html += `<li style="margin: 10px 0; padding-left: 25px; position: relative; line-height: 1.7; color: #d0d0d0;">
+                            <span style="position: absolute; left: 0; color: #10b981; font-weight: bold;">✓</span>
+                            ${formattedText}
+                        </li>`;
+                        i++;
+                    }
+                    
+                    html += '</ul></div>';
+                    continue;
+                }
+
+                // Regular paragraph with markdown formatting
+                if (trimmed) {
+                    // Skip stray "code" or other incomplete markers
+                    if (trimmed.toLowerCase() === 'code' || trimmed === '```' || trimmed === '---') {
+                        i++;
+                        continue;
+                    }
+                    
+                    const formattedText = formatMarkdownText(trimmed);
+                    html += `<div class="assessment-section">
+                        <div class="assessment-content" style="padding-left: 20px; border-left: 3px solid #3d6a9c; color: #d0d0d0; line-height: 1.8; font-size: 0.95em; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 12px 0;">
+                            ${formattedText}
+                        </div>
+                    </div>`;
+                    i++;
+                }
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        // Helper: Format content block (handles mixed bullet/numbered lists and paragraphs)
+        function formatContentBlock(content) {
+            let html = '';
+            let i = 0;
+            
+            while (i < content.length) {
+                const line = content[i];
+                const trimmed = line.trim();
+                
+                if (!trimmed) {
+                    i++;
+                    continue;
+                }
+                
+                // Numbered list
+                if (trimmed.match(/^\d+\.\s/)) {
+                    html += '<ol style="list-style: decimal; padding-left: 25px; color: #d0d0d0; margin: 12px 0; font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif;">';
+                    while (i < content.length) {
+                        const l = content[i];
+                        const t = l.trim();
+                        if (!t || !t.match(/^\d+\.\s/)) break;
+                        const text = t.replace(/^\d+\.\s+/, '').trim();
+                        html += `<li style="margin: 10px 0; line-height: 1.7; color: #d0d0d0;">${formatMarkdownText(text)}</li>`;
+                        i++;
+                    }
+                    html += '</ol>';
+                } 
+                // Bullet list
+                else if (trimmed.match(/^[-•*]\s/)) {
+                    html += '<ul style="list-style: none; padding: 0; margin: 12px 0; font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif;">';
+                    while (i < content.length) {
+                        const l = content[i];
+                        const t = l.trim();
+                        if (!t || !t.match(/^[-•*]\s/)) break;
+                        const text = t.replace(/^[-•*]\s+/, '').trim();
+                        html += `<li style="margin: 10px 0; padding-left: 25px; position: relative; color: #d0d0d0; line-height: 1.7;">
+                            <span style="position: absolute; left: 0; color: #10b981; font-weight: bold;">✓</span>
+                            ${formatMarkdownText(text)}
+                        </li>`;
+                        i++;
+                    }
+                    html += '</ul>';
+                } 
+                // Regular paragraph
+                else {
+                    // Skip stray markers or incomplete tags
+                    if (trimmed.toLowerCase() !== 'code' && trimmed !== '```' && trimmed !== '---') {
+                        html += `<p style="margin: 12px 0; line-height: 1.7; color: #d0d0d0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">${formatMarkdownText(trimmed)}</p>`;
+                    }
+                    i++;
+                }
+            }
+            
+            return html;
+        }
+
+        // Helper: Format markdown text (bold, code, etc.)
+        function formatMarkdownText(text) {
+            // Escape HTML first
+            let escaped = escapeHtml(text);
+            
+            // Format bold text: **text** -> <strong>text</strong>
+            escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong style="color: #60a5fa; font-weight: 700;">$1</strong>');
+            
+            // Format inline code: `text` -> <code>text</code>
+            escaped = escaped.replace(/`(.*?)`/g, '<code style="background: #1e2835; padding: 2px 6px; border-radius: 4px; font-family: \'Courier New\', monospace; color: #60a5fa; font-weight: 600; border: 1px solid #3d6a9c;">$1</code>');
+            
+            return escaped;
+        }
+
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            showAlert('Welcome! Choose a mode to get started.', 'info');
+            updateProTips('direct');
+        });
+
+        // Mode Switching
+        function switchMode(mode) {
+            // Update button states
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+
+            // Show/hide sections
+            document.querySelectorAll('.mode-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(`${mode}Mode`).classList.add('active');
+
+            // Update pro tips
+            updateProTips(mode);
+
+            // Clear previous results
+            clearResults();
+        }
+
+        // Update Pro Tips based on mode
+        function updateProTips(mode) {
+            const tipsContent = document.getElementById('tipsContent');
+            if (mode === 'direct') {
+                tipsContent.innerHTML = `
+                    <li>✏️ Enter or paste user story content manually</li>
+                    <li>Click "Get Score" to analyze with Groq AI</li>
+                    <li>Groq beautifies and generates quality score</li>
+                    <li>Copy results for further use or documentation</li>
+                    <li>Use the Clear button to reset and start fresh</li>
+                `;
+            } else {
+                tipsContent.innerHTML = `
+                    <li>� Click "Get Score" button to instantly generate a score</li>
+                    <li>Langflow processes and analyzes the input</li>
+                    <li>Get instant quality assessment and feedback</li>
+                    <li>View detailed results and copy as needed</li>
+                    <li>Use the Clear button to reset and try again</li>
+                `;
+            }
+        }
+
+        // Fetch from Jira and Score (Call Langflow Flow)
+        async function fetchFromJiraAndScore() {
+            const btn = event.target.closest('.btn-primary');
+            const btnText = btn.querySelector('#jiraBtnText');
+            const originalText = btnText.textContent;
+
+            try {
+                btn.disabled = true;
+                btnText.innerHTML = '<span class="loading"></span>Getting Score...';
+                
+                addDebugLog('Quick Score Mode: Calling Langflow Flow...', 'info');
+
+                // Simple test input for the flow
+                const testInput = "As a user, I want to quickly test the scoring system.";
+
+                const payload = {
+                    output_type: 'text',
+                    input_type: 'text',
+                    input_value: testInput
+                };
+
+                addDebugLog('Sending to Langflow API...', 'info');
+
+                const response = await fetch(LANGFLOW_API, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': API_KEY
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                addDebugLog('Response received from Langflow', 'success');
+
+                // Extract result from response
+                let result = extractResultFromResponse(data);
+                
+                if (!result) {
+                    throw new Error('Could not extract result from Langflow response');
+                }
+
+                // Extract score
+                let score = extractScoreFromText(result);
+                addDebugLog(`Extracted Score: ${score}`, 'success');
+
+                // Display results
+                displayResults(testInput, result, score);
+                showAlert('✅ Score generated successfully!', 'success');
+
+            } catch (error) {
+                addDebugLog(`Error: ${error.message}`, 'error');
+                console.error('Error:', error);
+                
+                let errorMsg = error.message;
+                if (error.message.includes('Failed to fetch')) {
+                    errorMsg = 'Cannot connect to Langflow. Verify it is running on http://localhost:7860';
+                }
+                
+                showAlert(`❌ Error: ${errorMsg}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = originalText;
+            }
+        }
+
+        // Debug Console Functions
+        function toggleDebugPanel() {
+            const panel = document.getElementById('debugPanel');
+            panel.classList.toggle('show');
+        }
+
+        function addDebugLog(message, type = 'info') {
+            const debugLog = document.getElementById('debugLog');
+            const logEntry = document.createElement('div');
+            logEntry.className = `debug-log ${type}`;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            debugLog.appendChild(logEntry);
+            debugLog.scrollTop = debugLog.scrollHeight;
+        }
+
+        // Override console.log for debugging
+        const originalLog = console.log;
+        console.log = function(message) {
+            originalLog(message);
+            if (typeof message === 'string') {
+                addDebugLog(message, 'info');
+            } else {
+                addDebugLog(JSON.stringify(message), 'info');
+            }
+        };
+
+    </script>
+</body>
+</html>
