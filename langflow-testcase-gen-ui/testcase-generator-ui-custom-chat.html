@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Testcase Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR - Instructions and Controls */
+        .sidebar {
+            width: 28%;
+            background: linear-gradient(135deg, #1a1f3a 0%, #16213e 100%);
+            color: #e2e8f0;
+            padding: 30px;
+            overflow-y: auto;
+            box-shadow: -8px 0 32px rgba(0, 0, 0, 0.4);
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .sidebar h1 {
+            font-size: 26px;
+            margin-bottom: 25px;
+            font-weight: 800;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+            padding-bottom: 15px;
+            color: #3b82f6;
+        }
+
+        .sidebar h2 {
+            font-size: 12px;
+            margin-top: 28px;
+            margin-bottom: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #93c5fd;
+            opacity: 0.9;
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.06);
+            padding: 14px;
+            border-radius: 10px;
+            line-height: 1.6;
+            font-size: 12px;
+            margin-bottom: 18px;
+            border-left: 3px solid #3b82f6;
+            color: #cbd5e1;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        .sample-stories {
+            background: rgba(255, 255, 255, 0.06);
+            padding: 14px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+            font-size: 12px;
+            line-height: 1.6;
+            border-left: 3px solid #10b981;
+            color: #cbd5e1;
+        }
+
+        .sample-stories ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .sample-stories li {
+            margin-bottom: 6px;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 11px 16px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: #10b981;
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 12px;
+            width: auto;
+            display: inline-block;
+            margin-bottom: 0;
+        }
+
+        /* MAIN CONTENT AREA */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #1a1f3a 0%, #16213e 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-content::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 0;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(200px, -50%);
+            pointer-events: none;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 100%);
+            color: white;
+            padding: 24px 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            color: #e2e8f0;
+        }
+
+        .header-icon {
+            margin-right: 16px;
+            font-size: 36px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-6px);
+            }
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .content-placeholder {
+            color: #64748b;
+            max-width: 600px;
+        }
+
+        .content-placeholder h2 {
+            color: #3b82f6;
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+
+        .content-placeholder p {
+            font-size: 14px;
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+
+        /* CUSTOM CHAT WIDGET - TOP RIGHT POSITION */
+        .chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 380px;
+            height: 600px;
+            background: linear-gradient(135deg, #1a1f3a 0%, #16213e 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            z-index: 999;
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+        }
+
+        .chat-widget.minimized {
+            height: 60px;
+            width: 60px;
+            bottom: 20px;
+            right: 20px;
+        }
+
+        .chat-widget.minimized .chat-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+            padding: 0;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border-radius: 50%;
+        }
+
+        .chat-widget.minimized h3,
+        .chat-widget.minimized .close-btn {
+            display: none;
+        }
+
+        .chat-widget.minimized .header-buttons {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+        }
+
+        .chat-widget.minimized .toggle-btn {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            padding: 0;
+            background: rgba(74, 158, 255, 0.1);
+            border-radius: 50%;
+            border: 2px solid #4a9eff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: chatPulse 2s infinite;
+        }
+
+        .chat-widget.minimized .toggle-btn:hover {
+            background: rgba(74, 158, 255, 0.2);
+            transform: scale(1.1);
+            animation: none;
+        }
+
+        .chat-widget.minimized .chat-body,
+        .chat-widget.minimized .chat-footer {
+            display: none;
+        }
+
+        /* Chat Widget Header */
+        .chat-header {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-header h3 {
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-header-icon {
+            font-size: 18px;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .toggle-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            padding: 6px 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            width: 100%;
+            height: 100%;
+            border-radius: 16px;
+        }
+
+        .toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            padding: 6px 10px;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Chat Body */
+        .chat-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 100%);
+            scrollbar-width: thin;
+            scrollbar-color: #3b82f6 transparent;
+        }
+
+        .chat-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-body::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 3px;
+        }
+
+        .chat-message {
+            display: flex;
+            animation: slideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-user {
+            justify-content: flex-end;
+        }
+
+        .message-bot {
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            word-wrap: break-word;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .bubble-user {
+            background: #3b82f6;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .bubble-bot {
+            background: #1e293b;
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom-left-radius: 4px;
+        }
+
+        .empty-chat-message {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            color: #64748b;
+            gap: 8px;
+        }
+
+        .empty-chat-icon {
+            font-size: 32px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        .empty-chat-message h4 {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .empty-chat-message p {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        /* Chat Footer */
+        .chat-footer {
+            background: linear-gradient(135deg, #1a1f3a 0%, #16213e 100%);
+            padding: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: inherit;
+            background: #1e293b;
+            color: #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+        }
+
+        .chat-input::placeholder {
+            color: #64748b;
+        }
+
+        .send-chat-btn {
+            padding: 10px 14px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 11px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .send-chat-btn:hover:not(:disabled) {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .send-chat-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .control-buttons-chat {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn-chat {
+            flex: 1;
+            min-width: 80px;
+            padding: 8px 10px;
+            border: none;
+            background: #1e293b;
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .control-btn-chat:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        .control-btn-chat.copy-btn {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border-color: #3b82f6;
+        }
+
+        .control-btn-chat.copy-btn:hover {
+            background: rgba(59, 130, 246, 0.25);
+        }
+
+        .control-btn-chat.clear-btn {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border-color: #ef4444;
+        }
+
+        .control-btn-chat.clear-btn:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
+
+        /* Feedback Message */
+        .feedback-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-weight: 700;
+            animation: slideInRight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 2000;
+            font-size: 12px;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .feedback-message.success {
+            background: #10b981;
+        }
+
+        .feedback-message.error {
+            background: #ef4444;
+        }
+
+        .feedback-message.warning {
+            background: #f97316;
+        }
+
+        /* API KEY MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 3000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #1a1f3a;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            max-width: 480px;
+            width: 90%;
+            text-align: center;
+            animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes chatPulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(74, 158, 255, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 8px rgba(74, 158, 255, 0);
+            }
+        }
+
+        .modal-content h2 {
+            color: #3b82f6;
+            margin-bottom: 12px;
+            font-size: 26px;
+            font-weight: 800;
+        }
+
+        .modal-content p {
+            color: #94a3b8;
+            margin-bottom: 24px;
+            line-height: 1.6;
+            font-size: 13px;
+        }
+
+        .api-key-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+
+        .api-key-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 11px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 12px;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-btn-primary {
+            background: #3b82f6;
+            color: white;
+            flex: 1;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .modal-btn-primary:hover {
+            transform: translateY(-2px);
+            background: #2563eb;
+        }
+
+        .modal-btn-secondary {
+            background: #1e293b;
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            flex: 1;
+        }
+
+        .modal-btn-secondary:hover {
+            background: #0f172a;
+            color: #cbd5e0;
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+
+
+
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 45%;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            }
+
+            .main-content {
+                height: 55%;
+            }
+
+            .chat-widget {
+                width: 340px;
+                height: 550px;
+            }
+        }
+
+        /* Beautified Test Case Formatting */
+        .beautified-testcase {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .beautified-testcase h4 {
+            color: #3b82f6;
+            font-size: 13px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .beautified-testcase ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .beautified-testcase li {
+            color: #cbd5e1;
+            font-size: 11px;
+            line-height: 1.6;
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .beautified-testcase li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .beautified-testcase li strong {
+            color: #e2e8f0;
+            font-weight: 600;
+        }
+
+        .testcase-section-title {
+            color: #10b981;
+            font-size: 12px;
+            font-weight: 700;
+            margin-top: 12px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .testcase-item-header {
+            background: rgba(59, 130, 246, 0.1);
+            padding: 8px 10px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #3b82f6;
+            font-size: 11px;
+        }
+
+        .testcase-item-content {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 8px 10px;
+            border-radius: 4px;
+            margin-left: 8px;
+            border-left: 2px solid #10b981;
+            margin-bottom: 8px;
+        }
+
+        .testcase-item-content p {
+            margin: 4px 0;
+            font-size: 11px;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                padding: 16px;
+                max-height: 50%;
+            }
+
+            .header {
+                padding: 16px 20px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .header-icon {
+                margin-right: 10px;
+                font-size: 28px;
+            }
+
+            .chat-widget {
+                width: 100%;
+                height: 100%;
+                bottom: 0;
+                right: 0;
+                border-radius: 0;
+            }
+
+            .chat-widget.minimized {
+                width: 60px;
+                height: 60px;
+                bottom: 20px;
+                right: 20px;
+                border-radius: 16px;
+            }
+
+            .content-placeholder h2 {
+                font-size: 22px;
+            }
+
+            .modal-content {
+                padding: 28px 20px;
+                border-radius: 12px;
+            }
+
+            .modal-content h2 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- SIDEBAR: Instructions and Sample Stories -->
+        <aside class="sidebar">
+            <h1>Test Case Generator</h1>
+
+            <h2>Quick Start</h2>
+            <div class="instructions">
+                <ol>
+                    <li>Open the chat on the right side</li>
+                    <li>Enter your user story</li>
+                    <li>AI generates test cases instantly</li>
+                    <li>Copy and use the results</li>
+                </ol>
+            </div>
+
+            <h2>Chat Interface Guide</h2>
+            <div class="instructions">
+                <ol>
+                    <li>Click the chat toggle button (top-right corner)</li>
+                    <li>Type your user story or test requirements</li>
+                    <li>Press Send or Enter to submit</li>
+                    <li>Use Copy Output to save results</li>
+                    <li>Use Clear Chat to start fresh</li>
+                </ol>
+            </div>
+
+            <h2>Sample Banking Stories</h2>
+            <div class="sample-stories">
+                <ul>
+                    <li>As a customer, I want to transfer funds between my accounts so that I can manage my money efficiently.</li>
+                    <li>As a customer, I want to view my transaction history for the last 90 days so that I can track my spending.</li>
+                </ul>
+                <p style="margin-top: 12px; font-size: 11px;">Copy and paste these stories in the chat to generate comprehensive test cases!</p>
+            </div>
+
+            <h2>💡 Pro Tips</h2>
+            <div class="sample-stories">
+                <ul>
+                    <li><strong>Be Specific:</strong> Add constraints like budgets or user roles</li>
+                    <li><strong>Edge Cases:</strong> Mention boundary conditions (zero amounts, max transfers)</li>
+                    <li><strong>API & UI Tests:</strong> Specify backend, frontend, or integration tests</li>
+                    <li><strong>Test Scenarios:</strong> Ask for happy path, sad path, and error scenarios</li>
+                    <li><strong>Reuse Outputs:</strong> Copy and refine iteratively</li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            <div class="header">
+                <h1>
+                    <span class="header-icon">🤖</span>
+                    Test Case Generator with Custom Chat
+                </h1>
+            </div>
+
+            <div class="content-area">
+                <div class="content-placeholder">
+                    <h2>Welcome to AI Test Case Generator</h2>
+                    <p>Generate comprehensive test cases for your user stories using our AI-powered assistant.</p>
+                    <p style="color: #3b82f6; font-weight: 600;">👉 Open the chat interface on the right side to get started!</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- CUSTOM CHAT WIDGET - POSITIONED TOP RIGHT -->
+    <div class="chat-widget" id="chatWidget">
+        <div class="chat-header">
+            <h3>
+                <span class="chat-header-icon">💬</span>
+                Test Case Assistant
+            </h3>
+            <div class="header-buttons">
+                <button class="toggle-btn" id="minimizeBtn" onclick="toggleChatMinimize()" title="Minimize Chat">▼</button>
+                <button class="close-btn" onclick="toggleApiKeyModal()" title="Change API Key">⚙️</button>
+            </div>
+        </div>
+
+        <div class="chat-body" id="chatBody">
+            <div class="empty-chat-message">
+                <div class="empty-chat-icon">💡</div>
+                <h4>No messages yet</h4>
+                <p>Start by entering your user story below</p>
+            </div>
+        </div>
+
+        <div class="chat-footer">
+            <div class="input-area">
+                <input 
+                    type="text" 
+                    id="chatInput" 
+                    class="chat-input" 
+                    placeholder="Enter user story..."
+                    autocomplete="off"
+                />
+                <button class="send-chat-btn" id="sendChatBtn" onclick="sendChatMessage()">Send</button>
+            </div>
+            <div class="control-buttons-chat">
+                <button class="control-btn-chat copy-btn" onclick="copyChatOutput()" title="Copy all messages">📋 Copy</button>
+                <button class="control-btn-chat clear-btn" onclick="clearChatMessages()" title="Clear all messages">🗑️ Clear</button>
+                <button class="control-btn-chat" onclick="loadSampleStory()" title="Load sample user story">📌 Sample</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- API KEY MODAL -->
+    <div id="apiKeyModal" class="modal">
+        <div class="modal-content">
+            <h2>🔑 API Configuration</h2>
+            <p>Enter your Langflow API details to get started</p>
+            <input 
+                type="password" 
+                id="apiKeyInput" 
+                class="api-key-input" 
+                placeholder="Paste your Langflow API key here..."
+                autocomplete="off"
+            />
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-primary" onclick="startWithApiKey()">Start Using Chat</button>
+                <button class="modal-btn modal-btn-secondary" onclick="toggleApiKeyVisibility()">Show Key</button>
+            </div>
+            <p style="margin-top: 16px; font-size: 11px; color: #64748b;">
+                Your API key is stored in session only • Not saved locally
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Langflow Configuration
+        const LANGFLOW_CONFIG = {
+            hostUrl: 'http://localhost:7860',
+            flowId: '23500e26-476d-4508-b840-b6902a1d5e69',
+            apiKey: 'sk-C3jxlLGdyG8ir5GI3zx1tQ7-W7iLqSspzaHuiFOBqjw'
+        };
+
+        let chatHistory = [];
+        let isLoading = false;
+        let isApiKeySet = true;
+        let isChatMinimized = false;
+
+        // Auto-focus chat input when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                document.getElementById('chatInput').focus();
+            }, 500);
+        });
+
+
+
+        /**
+         * Toggle chat minimize
+         */
+        function toggleChatMinimize() {
+            isChatMinimized = !isChatMinimized;
+            const chatWidget = document.getElementById('chatWidget');
+            const minimizeBtn = document.getElementById('minimizeBtn');
+
+            if (isChatMinimized) {
+                chatWidget.classList.add('minimized');
+                minimizeBtn.innerHTML = '💬';
+                minimizeBtn.title = 'Open Chat';
+            } else {
+                chatWidget.classList.remove('minimized');
+                minimizeBtn.innerHTML = '▼';
+                minimizeBtn.title = 'Minimize Chat';
+                document.getElementById('chatInput').focus();
+            }
+        }
+
+        /**
+         * Beautify test case response
+         */
+        function beautifyTestCaseResponse(message) {
+            let html = '';
+            
+            try {
+                if (message.includes('Test Case') || message.includes('Scenario') || message.includes('Step')) {
+                    const lines = message.split('\n').filter(line => line.trim());
+                    let currentSection = null;
+                    let sectionContent = [];
+                    
+                    lines.forEach((line) => {
+                        const trimmed = line.trim();
+                        
+                        if (trimmed.match(/^(Test Case|Scenario|Expected|Given|When|Then|And|Steps?:|Precondition|Postcondition|Data)\s*:?\s*\d*\s*[-.]?/i)) {
+                            if (sectionContent.length > 0 && currentSection) {
+                                html += `<div class="testcase-item-header">${currentSection}</div>`;
+                                html += `<div class="testcase-item-content">${sectionContent.join('')}</div>`;
+                                sectionContent = [];
+                            }
+                            currentSection = trimmed.replace(/^\d+\.\s*/, '');
+                        } else if (trimmed.match(/^[•·\-\*→]\s+/)) {
+                            const content = trimmed.replace(/^[•·\-\*→]\s+/, '');
+                            sectionContent.push(`<p>• ${content}</p>`);
+                        } else if (currentSection && trimmed.length > 0) {
+                            sectionContent.push(`<p>${trimmed}</p>`);
+                        }
+                    });
+                    
+                    if (sectionContent.length > 0 && currentSection) {
+                        html += `<div class="testcase-item-header">${currentSection}</div>`;
+                        html += `<div class="testcase-item-content">${sectionContent.join('')}</div>`;
+                    }
+                    
+                    if (html.length === 0) {
+                        html = '<div class="beautified-testcase">';
+                        lines.forEach(line => {
+                            const trimmed = line.trim();
+                            if (trimmed.length > 0) {
+                                const formatted = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                                         .replace(/^(\d+)\.\s*/, '');
+                                html += `<li>${formatted}</li>`;
+                            }
+                        });
+                        html += '</div>';
+                    }
+                    
+                    return html;
+                }
+            } catch (e) {
+                console.log('Could not parse as test case');
+            }
+            
+            const lines = message.split('\n').filter(line => line.trim());
+            if (lines.length > 1 && lines.some(l => l.trim().match(/^[•·\-\*→]|^\d+\./))) {
+                html = '<div class="beautified-testcase">';
+                lines.forEach(line => {
+                    const trimmed = line.trim();
+                    if (trimmed.length > 0) {
+                        const formatted = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                               .replace(/^[•·\-\*→]\s*/, '')
+                                               .replace(/^\d+\.\s*/, '');
+                        html += `<li>${formatted}</li>`;
+                    }
+                });
+                html += '</div>';
+                return html;
+            }
+            
+            return message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                         .replace(/\n/g, '<br>');
+        }
+
+        /**
+         * Add message to chat
+         */
+        function addMessageToChat(message, sender) {
+            const chatBody = document.getElementById('chatBody');
+
+            const emptyMessage = chatBody.querySelector('.empty-chat-message');
+            if (emptyMessage) {
+                emptyMessage.remove();
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message message-${sender}`;
+
+            const bubble = document.createElement('div');
+            bubble.className = `message-bubble bubble-${sender}`;
+            
+            if (sender === 'bot') {
+                bubble.innerHTML = beautifyTestCaseResponse(message);
+            } else {
+                bubble.textContent = message;
+            }
+
+            messageDiv.appendChild(bubble);
+            chatBody.appendChild(messageDiv);
+
+            chatHistory.push({ message, sender });
+
+            setTimeout(() => {
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }, 100);
+        }
+
+        /**
+         * Send chat message
+         */
+        async function sendChatMessage() {
+            if (!isApiKeySet) {
+                showFeedback('Please configure API key first', 'warning');
+                toggleApiKeyModal();
+                return;
+            }
+
+            const chatInput = document.getElementById('chatInput');
+            const message = chatInput.value.trim();
+
+            if (!message) {
+                showFeedback('Please enter a message', 'warning');
+                return;
+            }
+
+            if (isLoading) {
+                showFeedback('Waiting for response...', 'warning');
+                return;
+            }
+
+            addMessageToChat(message, 'user');
+            chatInput.value = '';
+
+            updateSendButtonState(true);
+            isLoading = true;
+
+            try {
+                const response = await callLangflowAPI(message);
+                if (response) {
+                    addMessageToChat(response, 'bot');
+                    showFeedback('Response received', 'success');
+                } else {
+                    addMessageToChat('⚠️ No response received from API', 'bot');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                addMessageToChat(`⚠️ Error: ${error.message}`, 'bot');
+                showFeedback(`Error: ${error.message}`, 'error');
+            } finally {
+                isLoading = false;
+                updateSendButtonState(false);
+                chatInput.focus();
+            }
+        }
+
+        /**
+         * Call Langflow API
+         */
+        async function callLangflowAPI(message) {
+            const endpoint = `${LANGFLOW_CONFIG.hostUrl}/api/v1/run/${LANGFLOW_CONFIG.flowId}?stream=false&api_key=${LANGFLOW_CONFIG.apiKey}`;
+            const sessionId = 'session_' + Date.now();
+
+            const payload = {
+                output_type: 'chat',
+                input_type: 'chat',
+                input_value: message,
+                session_id: sessionId
+            };
+
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${LANGFLOW_CONFIG.apiKey}`,
+                'X-API-Key': LANGFLOW_CONFIG.apiKey
+            };
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(payload),
+                    mode: 'cors'
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                let botResponse = '';
+
+                if (data.outputs && data.outputs.length > 0) {
+                    const output = data.outputs[0];
+                    if (output.outputs && output.outputs.length > 0) {
+                        const result = output.outputs[0].results;
+                        if (result.message && result.message.text) {
+                            botResponse = result.message.text;
+                        } else if (result.output) {
+                            botResponse = result.output;
+                        } else {
+                            botResponse = JSON.stringify(result);
+                        }
+                    }
+                } else if (data.message) {
+                    botResponse = data.message;
+                } else if (data.result) {
+                    botResponse = data.result;
+                } else {
+                    botResponse = JSON.stringify(data);
+                }
+
+                return botResponse;
+            } catch (error) {
+                console.error('API call failed:', error);
+                throw error;
+            }
+        }
+
+        /**
+         * Update send button state
+         */
+        function updateSendButtonState(disabled) {
+            const sendBtn = document.getElementById('sendChatBtn');
+            const chatInput = document.getElementById('chatInput');
+
+            sendBtn.disabled = disabled;
+            chatInput.disabled = disabled;
+
+            if (disabled) {
+                sendBtn.textContent = 'Sending...';
+            } else {
+                sendBtn.textContent = 'Send';
+            }
+        }
+
+        /**
+         * Copy chat output
+         */
+        function copyChatOutput() {
+            if (chatHistory.length === 0) {
+                showFeedback('No messages to copy', 'warning');
+                return;
+            }
+
+            let textToCopy = 'Test Case Generator Output\n' + '='.repeat(30) + '\n\n';
+
+            chatHistory.forEach((item) => {
+                const prefix = item.sender === 'user' ? 'USER' : 'BOT';
+                textToCopy += `[${prefix}]\n${item.message}\n\n`;
+            });
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showFeedback('Copied to clipboard!', 'success');
+            }).catch(() => {
+                showFeedback('Copy failed', 'error');
+            });
+        }
+
+        /**
+         * Clear chat messages
+         */
+        function clearChatMessages() {
+            const confirmed = confirm('Clear all messages?');
+            if (confirmed) {
+                const chatBody = document.getElementById('chatBody');
+                chatHistory = [];
+
+                chatBody.innerHTML = `
+                    <div class="empty-chat-message">
+                        <div class="empty-chat-icon">💡</div>
+                        <h4>No messages yet</h4>
+                        <p>Start by entering your user story below</p>
+                    </div>
+                `;
+
+                showFeedback('Chat cleared', 'success');
+                document.getElementById('chatInput').focus();
+            }
+        }
+
+        /**
+         * Load sample story
+         */
+        function loadSampleStory() {
+            const sampleStory = `Banking Fund Transfer:
+
+1. As a customer, I want to transfer funds between my accounts so that I can manage my money efficiently.
+
+2. As a customer, I want to view my transaction history for the last 90 days so that I can track my spending.
+
+Please generate: Positive & negative test cases, Edge cases, Acceptance criteria, API and UI scenarios`;
+
+            addMessageToChat(sampleStory, 'bot');
+            showFeedback('Sample story loaded!', 'success');
+            document.getElementById('chatInput').focus();
+        }
+
+        /**
+         * Show feedback message
+         */
+        function showFeedback(message, type = 'success') {
+            const feedback = document.createElement('div');
+            feedback.className = `feedback-message ${type}`;
+            feedback.textContent = message;
+            document.body.appendChild(feedback);
+
+            setTimeout(() => {
+                feedback.remove();
+            }, 3000);
+        }
+
+        /**
+         * Toggle API key visibility
+         */
+        function toggleApiKeyVisibility() {
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            apiKeyInput.type = apiKeyInput.type === 'password' ? 'text' : 'password';
+        }
+
+        /**
+         * Start with API key
+         */
+        function startWithApiKey() {
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            const apiKey = apiKeyInput.value.trim();
+
+            if (!apiKey) {
+                showFeedback('Please enter your API key', 'warning');
+                return;
+            }
+
+            LANGFLOW_CONFIG.apiKey = apiKey;
+            isApiKeySet = true;
+
+            const modal = document.getElementById('apiKeyModal');
+            modal.classList.remove('show');
+
+            setTimeout(() => {
+                document.getElementById('chatInput').focus();
+            }, 300);
+
+            showFeedback('API configured successfully!', 'success');
+        }
+
+        /**
+         * Toggle API key modal
+         */
+        function toggleApiKeyModal() {
+            const modal = document.getElementById('apiKeyModal');
+            modal.classList.toggle('show');
+        }
+
+        /**
+         * Initialize on page load
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            const chatInput = document.getElementById('chatInput');
+            const apiKeyInput = document.getElementById('apiKeyInput');
+
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendChatMessage();
+                }
+            });
+
+            apiKeyInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    startWithApiKey();
+                }
+            });
+
+            console.log('✓ Test Case Generator loaded');
+        });
+    </script>
+</body>
+</html>
+                toggle.classList.remove('active');
+                label.textContent = 'Langflow';
+                customChat.classList.add('hidden');
+                langflowChat.classList.add('show');
+                showFeedback('Switched to Langflow Chat', 'success');
+                // Load Langflow interface
+                loadLangflowChat();
+            } else {
+                toggle.classList.add('active');
+                label.textContent = 'Custom';
+                customChat.classList.remove('hidden');
+                langflowChat.classList.remove('show');
+                showFeedback('Switched to Custom Chat', 'success');
+            }
+            
+            // Save preference to localStorage
+            localStorage.setItem('chatMode', currentChatMode);
+        }
+
+        /**
+         * Load Langflow chat interface
+         */
+        function loadLangflowChat() {
+            const iframe = document.getElementById('langflowIframe');
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;\n            \n            // Create HTML with Langflow chat interface\n            const langflowHtml = `\n                <!DOCTYPE html>\n                <html>\n                <head>\n                    <meta charset=\"UTF-8\">\n                    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n                    <title>Langflow Chat</title>\n                    <style>\n                        * { margin: 0; padding: 0; box-sizing: border-box; }\n                        body { \n                            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n                            background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 100%);\n                            height: 100vh;\n                            color: #e2e8f0;\n                        }\n                        .langflow-wrapper {\n                            height: 100%;\n                            display: flex;\n                            flex-direction: column;\n                            padding: 16px;\n                            overflow: hidden;\n                        }\n                        .langflow-header {\n                            text-align: center;\n                            margin-bottom: 16px;\n                            padding-bottom: 12px;\n                            border-bottom: 1px solid rgba(255, 255, 255, 0.1);\n                        }\n                        .langflow-header h2 {\n                            font-size: 16px;\n                            font-weight: 700;\n                            color: #3b82f6;\n                            margin-bottom: 4px;\n                        }\n                        .langflow-header p {\n                            font-size: 11px;\n                            color: #94a3b8;\n                        }\n                        .chat-info {\n                            flex: 1;\n                            display: flex;\n                            align-items: center;\n                            justify-content: center;\n                            flex-direction: column;\n                            gap: 20px;\n                            text-align: center;\n                            padding: 20px;\n                        }\n                        .spinner {\n                            border: 3px solid rgba(255, 255, 255, 0.1);\n                            border-top: 3px solid #3b82f6;\n                            border-radius: 50%;\n                            width: 40px;\n                            height: 40px;\n                            animation: spin 1s linear infinite;\n                        }\n                        @keyframes spin {\n                            0% { transform: rotate(0deg); }\n                            100% { transform: rotate(360deg); }\n                        }\n                        .loading-text {\n                            font-size: 13px;\n                            font-weight: 600;\n                            color: #cbd5e1;\n                        }\n                        .info-text {\n                            font-size: 12px;\n                            color: #94a3b8;\n                            line-height: 1.6;\n                        }\n                        .note-box {\n                            background: rgba(59, 130, 246, 0.1);\n                            border: 1px solid rgba(59, 130, 246, 0.3);\n                            border-radius: 8px;\n                            padding: 12px;\n                            margin-top: 16px;\n                        }\n                        .note-title {\n                            font-size: 11px;\n                            font-weight: 700;\n                            color: #60a5fa;\n                            margin-bottom: 8px;\n                            text-transform: uppercase;\n                            letter-spacing: 0.5px;\n                        }\n                        .note-content {\n                            font-size: 10px;\n                            color: #cbd5e1;\n                            line-height: 1.5;\n                        }\n                    </style>\n                </head>\n                <body>\n                    <div class=\"langflow-wrapper\">\n                        <div class=\"langflow-header\">\n                            <h2>\ud83d\udd17 Langflow Chat Interface</h2>\n                            <p>Built-in chat component</p>\n                        </div>\n                        <div class=\"chat-info\">\n                            <div class=\"spinner\"></div>\n                            <div class=\"loading-text\">Loading Langflow Chat...</div>\n                            <div class=\"info-text\">\n                                This mode uses the Langflow embedded chat component.<br>\n                                Please wait while the interface loads.\n                            </div>\n                            <div class=\"note-box\">\n                                <div class=\"note-title\">\ud83c\udf1f Note</div>\n                                <div class=\"note-content\">\n                                    The Langflow chat interface provides an alternative way to interact with your AI model.\n                                    Toggle back to \"Custom\" chat for the beautified test case interface.\n                                </div>\n                            </div>\n                        </div>\n                    </div>\n                </body>\n                </html>\n            `;\n            \n            iframeDoc.open();\n            iframeDoc.write(langflowHtml);\n            iframeDoc.close();\n        }\n\n        /**\n         * Restore chat mode on page load\n         */\n        function restoreChatMode() {\n            const savedMode = localStorage.getItem('chatMode') || 'custom';\n            if (savedMode !== 'custom') {\n                currentChatMode = 'custom'; // Set to opposite to toggle correctly\n                toggleChatMode();\n            }\n        }\n\n        /**\n         * Add message to chat\n         */\n        function beautifyTestCaseResponse(message) {"
+            // Try to parse as JSON if it looks like test case data
+            let html = '';
+            
+            try {
+                // Check if message contains structured test case data
+                if (message.includes('Test Case') || message.includes('Scenario') || message.includes('Step')) {
+                    // Split by test cases or scenarios
+                    const lines = message.split('\n').filter(line => line.trim());
+                    
+                    let currentSection = null;
+                    let sectionContent = [];
+                    
+                    lines.forEach((line, index) => {
+                        const trimmed = line.trim();
+                        
+                        // Check if this is a header/title line
+                        if (trimmed.match(/^(Test Case|Scenario|Expected|Given|When|Then|And|Given - |When - |Then - |Steps?:|Precondition|Postcondition|Data)\s*:?\s*\d*\s*[-.]?/i)) {
+                            if (sectionContent.length > 0 && currentSection) {
+                                html += `<div class="testcase-item-header">${currentSection}</div>`;
+                                html += `<div class="testcase-item-content">${sectionContent.join('')}</div>`;
+                                sectionContent = [];
+                            }
+                            currentSection = trimmed.replace(/^\d+\.\s*/, '');
+                        } else if (trimmed.match(/^[•·\-\*→]\s+/)) {
+                            // Bullet point
+                            const content = trimmed.replace(/^[•·\-\*→]\s+/, '');
+                            sectionContent.push(`<p>• ${content}</p>`);
+                        } else if (currentSection && trimmed.length > 0) {
+                            sectionContent.push(`<p>${trimmed}</p>`);
+                        }
+                    });
+                    
+                    // Add the last section
+                    if (sectionContent.length > 0 && currentSection) {
+                        html += `<div class="testcase-item-header">${currentSection}</div>`;
+                        html += `<div class="testcase-item-content">${sectionContent.join('')}</div>`;
+                    }
+                    
+                    if (html.length === 0) {
+                        // Fallback: format as beautified bullet list
+                        html = '<div class="beautified-testcase">';
+                        lines.forEach(line => {
+                            const trimmed = line.trim();
+                            if (trimmed.length > 0) {
+                                // Make bold any text between ** markers
+                                const formatted = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                                         .replace(/^(\d+)\.\s*/, '');
+                                html += `<li>${formatted}</li>`;
+                            }
+                        });
+                        html += '</div>';
+                    }
+                    
+                    return html;
+                }
+            } catch (e) {
+                console.log('Could not parse as test case, using plain text');
+            }
+            
+            // Fallback: format plain text as beautified list
+            const lines = message.split('\n').filter(line => line.trim());
+            if (lines.length > 1 && lines.some(l => l.trim().match(/^[•·\-\*→]|^\d+\./))) {
+                html = '<div class="beautified-testcase">';
+                lines.forEach(line => {
+                    const trimmed = line.trim();
+                    if (trimmed.length > 0) {
+                        // Make bold any text between ** markers
+                        const formatted = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                               .replace(/^[•·\-\*→]\s*/, '')
+                                               .replace(/^\d+\.\s*/, '');
+                        html += `<li>${formatted}</li>`;
+                    }
+                });
+                html += '</div>';
+                return html;
+            }
+            
+            // Return plain text if no structure detected
+            return message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                         .replace(/\n/g, '<br>');
+        }
+
+        function addMessageToChat(message, sender) {
+            const chatBody = document.getElementById('chatBody');
+
+            const emptyMessage = chatBody.querySelector('.empty-chat-message');
+            if (emptyMessage) {
+                emptyMessage.remove();
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message message-${sender}`;
+
+            const bubble = document.createElement('div');
+            bubble.className = `message-bubble bubble-${sender}`;
+            
+            // Beautify bot messages, use plain text for user messages
+            if (sender === 'bot') {
+                bubble.innerHTML = beautifyTestCaseResponse(message);
+            } else {
+                bubble.textContent = message;
+            }
+
+            messageDiv.appendChild(bubble);
+            chatBody.appendChild(messageDiv);
+
+            chatHistory.push({ message, sender });
+
+            setTimeout(() => {
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }, 100);
+        }
+
+        /**
+         * Update send button state
+         */
+        function updateSendButtonState(disabled) {
+            const sendBtn = document.getElementById('sendChatBtn');
+            const chatInput = document.getElementById('chatInput');
+
+            sendBtn.disabled = disabled;
+            chatInput.disabled = disabled;
+
+            if (disabled) {
+                sendBtn.textContent = 'Sending...';
+            } else {
+                sendBtn.textContent = 'Send';
+            }
+        }
+
+        /**
+         * Copy chat output
+         */
+        function copyChatOutput() {
+            if (chatHistory.length === 0) {
+                showFeedback('No messages to copy', 'warning');
+                return;
+            }
+
+            let textToCopy = 'Test Case Generator Output\n' + '='.repeat(30) + '\n\n';
+
+            chatHistory.forEach((item) => {
+                const prefix = item.sender === 'user' ? 'USER' : 'BOT';
+                textToCopy += `[${prefix}]\n${item.message}\n\n`;
+            });
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showFeedback('Copied to clipboard!', 'success');
+            }).catch(() => {
+                showFeedback('Copy failed', 'error');
+            });
+        }
+
+        /**
+         * Clear chat messages
+         */
+        function clearChatMessages() {
+            const confirmed = confirm('Clear all messages?');
+            if (confirmed) {
+                const chatBody = document.getElementById('chatBody');
+                chatHistory = [];
+
+                chatBody.innerHTML = `
+                    <div class="empty-chat-message">
+                        <div class="empty-chat-icon">💡</div>
+                        <h4>No messages yet</h4>
+                        <p>Start by entering your user story below</p>
+                    </div>
+                `;
+
+                showFeedback('Chat cleared', 'success');
+                document.getElementById('chatInput').focus();
+            }
+        }
+
+        /**
+         * Load sample story
+         */
+        function loadSampleStory() {
+            const sampleStory = `Banking Fund Transfer User Stories:
+
+1. As a customer, I want to transfer funds between my accounts so that I can manage my money efficiently.
+
+2. As a customer, I want to view my transaction history for the last 90 days so that I can track my spending.
+
+Please generate:
+- Positive & negative test cases
+- Edge cases (zero amounts, max transfer limits)
+- Acceptance criteria
+- Both API and UI test scenarios`;
+
+            addMessageToChat(sampleStory, 'bot');
+            showFeedback('Sample story loaded!', 'success');
+            document.getElementById('chatInput').focus();
+        }
+
+        /**
+         * Show feedback message
+         */
+        function showFeedback(message, type = 'success') {
+            const feedback = document.createElement('div');
+            feedback.className = `feedback-message ${type}`;
+            feedback.textContent = message;
+            document.body.appendChild(feedback);
+
+            setTimeout(() => {
+                feedback.remove();
+            }, 3000);
+        }
+
+        /**
+         * Handle Enter key in chat input
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            // Restore chat mode preference
+            restoreChatMode();
+            
+            const chatInput = document.getElementById('chatInput');
+            const apiKeyInput = document.getElementById('apiKeyInput');
+
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendChatMessage();
+                }
+            });
+
+            apiKeyInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    startWithApiKey();
+                }
+            });
+
+            apiKeyInput.focus();
+
+            console.log('✓ Test Case Generator with Custom Chat loaded');
+            console.log('ℹ️  Configuration:', {
+                host: LANGFLOW_CONFIG.hostUrl,
+                flowId: LANGFLOW_CONFIG.flowId
+            });
+        });
+    </script>
+</body>
+</html>

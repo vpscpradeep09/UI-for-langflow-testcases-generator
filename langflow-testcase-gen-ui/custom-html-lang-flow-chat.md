@@ -29,7 +29,7 @@ Output:
 3)No external dependencies except the Langflow CDN script
 
 Additional information:
-Below is the html file i used to connect for a simple chat conversation , you can take details of CDN, Host and api key from below
+Below is the html file i used to connect for a simple chat conversation , you can take only details of CDN, Host and api key from below
 
 <html>
   <head>
